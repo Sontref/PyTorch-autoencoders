@@ -1,0 +1,7 @@
+_source
+__pycache__
+images
+lightning_logs
+.ipynb_checkpoints
+.vscode
+playground.ipynb
