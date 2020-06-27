@@ -28,7 +28,7 @@ def fetch_dataset(
                     attrs_name = "lfw_attributes.txt",
                     images_name = "lfw-deepfunneled",
                     dx=80, dy=80,
-                    dimx=45, dimy=45
+                    dimx=32, dimy=32
     ):
     
     #download if not exists
@@ -77,15 +77,15 @@ def fetch_dataset(
 
     all_photos = np.stack(all_photos.values).astype('uint8')
     all_attrs = df.drop(["photo_path","person","imagenum"], axis=1)
-    
+
     return all_photos, all_attrs
 
 
 
 class Faces(Dataset):
 
-    def __init__(self, path_to_data, transforms_=None):
-        data = fetch_dataset(path_to_data=path_to_data)
+    def __init__(self, path_to_data, img_height=45, img_width=45, transforms_=None):
+        data = fetch_dataset(path_to_data=path_to_data, dimx=img_height, dimy=img_width)
 
         self.transform = transforms_
 
