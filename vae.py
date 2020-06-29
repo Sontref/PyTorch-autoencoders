@@ -24,13 +24,13 @@ def vae_loss(rec_x, x, mu, logsigma):
     #num_features = x.shape[0] * x.shape[1] * x.shape[2] * x.shape[3]
     KLD = -0.5 * torch.sum(1 + logsigma - mu.pow(2) - logsigma.exp())
 
-    x = x.view(x.shape[0], -1)
-    rec_x = rec_x.view(rec_x.shape[0], -1)
-    #BCE = F.binary_cross_entropy(rec_x, x)
-    MSE = F.mse_loss(rec_x, x, reduction='sum')
+    #x = x.view(x.shape[0], -1)
+    #rec_x = rec_x.view(rec_x.shape[0], -1)
+    BCE = F.binary_cross_entropy(rec_x, x, reduction='sum')
+    #MSE = F.mse_loss(rec_x, x, reduction='sum')
     #BCE = torch.nn.functional.binary_cross_entropy(rec_x.view(x.shape), x, reduction='none').sum(dim=(1,2,3)).mean()
     #return (KLD + BCE)/2/num_features
-    return KLD + MSE
+    return KLD + BCE
 
 class Encoder(nn.Module):
     def __init__(self, input_shape=(3,45,45), hidden_size=512, latent_dim=100, dropout_rate=0.3):
