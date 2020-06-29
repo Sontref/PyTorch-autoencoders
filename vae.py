@@ -33,7 +33,7 @@ def vae_loss(rec_x, x, mu, logsigma):
     return KLD + BCE
 
 class Encoder(nn.Module):
-    def __init__(self, input_shape=(3,45,45), hidden_size=512, latent_dim=100, dropout_rate=0.3):
+    def __init__(self, input_shape=(3,45,45)):
         super().__init__()
         self.num_channels = input_shape[0]
         self.image_height = input_shape[1]
@@ -74,7 +74,7 @@ class Encoder(nn.Module):
         return mu, logvar
 
 class Decoder(nn.Module):
-    def __init__(self, output_shape, hidden_size=512, latent_dim=100, dropout_rate=0.3):
+    def __init__(self, output_shape):
         super().__init__()
         self.num_channels = output_shape[0]
         self.image_height = output_shape[1]
