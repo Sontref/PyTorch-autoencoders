@@ -1,6 +1,7 @@
 import glob
 import random
 import os
+import pathlib
 
 import numpy as np
 import pandas as pd
@@ -31,12 +32,14 @@ def fetch_dataset(
                     dimx=32, dimy=32
     ):
     
+    if not os.path.exists(path_to_data):
+        pathlib.Path("images/faces/").mkdir(parents=True, exist_ok=True)
     #download if not exists
     if not os.path.exists(path_to_data + images_name):
         print("images not found, downloading...")
-        os.system("wget -P %s http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz -O tmp.tgz" % path_to_data)
+        os.system("wget -O %stmp.tgz http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz" % (path_to_data))
         print("extracting...")
-        os.system("tar xvzf %s/tmp.tgz && rm images/faces/tmp.tgz" % path_to_data)
+        os.system("tar xvzf %s/tmp.tgz -C %s && rm %stmp.tgz" % (path_to_data, path_to_data, path_to_data))
         print("done")
         assert os.path.exists(path_to_data + images_name)
 
