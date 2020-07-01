@@ -57,7 +57,7 @@ This model gives nice results for lfw-dataset only after ~500 epochs (checked in
 * Try logging into TensorBoard – **done**; really cool stuff;
 * Split my project into modules – **not done**; main idea was to have base AE class and do some inheritance, nice 'train.py' scripts, use parser and so on, like I did for CycleGAN.
 But I even can't extract my models into "models/" directory, because they were losing access to "datasets.py". I need to check how to import modules from parent dir.
-* Know about autoencoders – **particularly done**; I can use them now, I can indentify tasks for AEs, but it is ***very*** difficult for me to debug them.
+* Learn about autoencoders – **particularly done**; I can use them now, I can indentify tasks for AEs, but it is ***very*** difficult for me to debug them.
 * Make different AEs for same tasks, compare them, make analysis – **not done**; most of them didn't work:D
 ___
 *P.S.:* in 3/4 tasks we were asked to do logging of train-val stuff. I've decided to try TensorBoard for this. I didn't regret: it is really nice tool.  
