@@ -16,83 +16,56 @@ from pytorch_lightning.core import LightningModule
 from datasets import Faces
 
 class Encoder(nn.Module):
-    def __init__(self, input_shape, net_type="fc"):
+    def __init__(self, input_shape, latent_dim=256):
         super().__init__()
 
-        self.net_type = net_type
         self.num_channels = input_shape[0]
         self.image_height = input_shape[1]
         self.image_width = input_shape[2]
-
-        if net_type == 'fc':
-            in_features = self.num_channels * self.image_height * self.image_width
-            hidden_size = 256
-            self.encoder = nn.Sequential(
-                nn.Linear(in_features, hidden_size),
-                #nn.ReLU(inplace=True),
-                #nn.Linear(hidden_size, hidden_size//2),
-                #nn.ReLU(inplace=True),
-            )
-        elif net_type == 'conv':
-            self.encoder = nn.Sequential(
-                nn.Conv2d(self.num_channels, 16, 3, padding=1),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(2, 2),
-                nn.Conv2d(16, 4, 3, padding=1),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(2, 2)
-            )
-        else:
-            raise Exception("Wrong net_type")
+        
+        in_features = self.num_channels * self.image_height * self.image_width
+        self.encoder = nn.Sequential(
+            nn.Linear(in_features, latent_dim),
+            #nn.ReLU(inplace=True),
+            #nn.Linear(hidden_size, hidden_size//2),
+            #nn.ReLU(inplace=True),
+        )
 
     def forward(self, x):
-        if self.net_type == 'fc':
-            x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1)
         return self.encoder(x)
 
 class Decoder(nn.Module):
-    def __init__(self, output_shape, net_type="fc"):
+    def __init__(self, output_shape, latent_dim=256):
         super().__init__()
 
-        self.net_type = net_type
         self.num_channels = output_shape[0]
         self.image_height = output_shape[1]
         self.image_width = output_shape[2]
 
-        if net_type == 'fc':
-            hidden_size = 256
-            out_features = self.num_channels * self.image_height * self.image_width
-            self.decoder = nn.Sequential(
-                #nn.Linear(hidden_size//2, hidden_size),
-                #nn.ReLU(inplace=True),
-                nn.Linear(hidden_size, out_features),
-                #nn.Sigmoid()
-            )
-        elif net_type == 'conv':
-            self.decoder = nn.Sequential(
-                nn.ConvTranspose2d(4, 16, 2, stride=2),
-                nn.ReLU(inplace=True),
-                nn.ConvTranspose2d(16, self.num_channels, 2, stride=2, output_padding=1),
-                #nn.Upsample(size=(self.image_height, self.image_width)),
-                nn.Sigmoid()
-            )
-        else:
-            raise Exception("Wrong net_type")
+        latent_dim = 256
+        out_features = self.num_channels * self.image_height * self.image_width
+        self.decoder = nn.Sequential(
+            #nn.Linear(hidden_size//2, hidden_size),
+            #nn.ReLU(inplace=True),
+            nn.Linear(latent_dim, out_features)
+            #nn.Sigmoid()
+        )
+
 
     def forward(self, x):
-        if self.net_type == 'fc':
-            x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1)
         return self.decoder(x).view(x.size(0), self.num_channels, self.image_height, self.image_width)
 
 
 class VanillaAE(LightningModule):
-    def __init__(self, input_shape, net_type='fc', dataset_name='mnist'):
+    def __init__(self, input_shape, latent_dim=256, dataset_name='mnist'):
         super().__init__()
         self.dataset_name = dataset_name
         self.input_shape = input_shape
 
-        self.encoder = Encoder(input_shape, net_type)
-        self.decoder = Decoder(input_shape, net_type)
+        self.encoder = Encoder(input_shape, latent_dim)
+        self.decoder = Decoder(input_shape, latent_dim)
 
         # cache for generated images
         self.generated_images = None
@@ -111,7 +84,6 @@ class VanillaAE(LightningModule):
     ###########
     def train_dataloader(self):
         
-
         if self.dataset_name == 'faces':
             transforms_ = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.,), (1.,))])
             dataset = Faces('images/faces/', transforms_=transforms_, img_height=self.input_shape[1], img_width=self.input_shape[2])
@@ -126,8 +98,8 @@ class VanillaAE(LightningModule):
             return DataLoader(dataset, batch_size=16, sampler=train_sampler, drop_last=True)
             
         elif self.dataset_name == 'mnist':
-            transforms_ = transforms.Compose([transforms.ToTensor(),
-                                      transforms.Normalize((0.1307,), (0.3081,))])
+            transforms_ = transforms.Compose([transforms.Resize((self.input_shape[1], self.input_shape[2])),
+                                              transforms.ToTensor()]) 
             mnist_train = MNIST('images/mnist', train=True, download=True,
                             transform=transforms_)
             return DataLoader(mnist_train, batch_size=16, drop_last=True)
@@ -159,12 +131,13 @@ class VanillaAE(LightningModule):
             return DataLoader(dataset, batch_size=5, sampler=val_sampler, drop_last=True)
             
         elif self.dataset_name == 'mnist':
-            transforms_ = transforms.Compose([transforms.ToTensor(),
-                                      transforms.Normalize((0.1307,), (0.3081,))])
+            transforms_ = transforms.Compose([transforms.Resize((self.input_shape[1], self.input_shape[2])),
+                                              transforms.ToTensor()]) 
+                                              #transforms.Normalize((0.1307,), (0.3081,))])
             mnist_train = MNIST('images/mnist', train=True, download=True,
                             transform=transforms_)
             _, mnist_val = torch.utils.data.random_split(mnist_train, [55000, 5000])
-            mnist_val = DataLoader(mnist_val, batch_size=5, drop_last=True)
+            mnist_val = DataLoader(mnist_val, batch_size=5, drop_last=True, shuffle=True)
             return mnist_val
     
     def validation_epoch_end(self, outputs):
