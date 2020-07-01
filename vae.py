@@ -160,7 +160,8 @@ class VAE(LightningModule):
         elif self.dataset_name == 'mnist':
             # transforms_ = transforms.Compose([transforms.ToTensor(),
             #                           transforms.Normalize((0.1307,), (0.3081,))])
-            transforms_ = transforms.Compose([transforms.ToTensor()])
+            transforms_ = transforms.Compose([transforms.Resize((self.input_shape[1], self.input_shape[2])),
+                                              transforms.ToTensor()]) 
             mnist_train = MNIST('images/mnist', train=True, download=True,
                             transform=transforms_)
             return DataLoader(mnist_train, batch_size=16, shuffle=True)
@@ -194,7 +195,8 @@ class VAE(LightningModule):
         elif self.dataset_name == 'mnist':
             # transforms_ = transforms.Compose([transforms.ToTensor(),
             #                           transforms.Normalize((0.1307,), (0.3081,))])
-            transforms_ = transforms.Compose([transforms.ToTensor()])
+            transforms_ = transforms.Compose([transforms.Resize((self.input_shape[1], self.input_shape[2])),
+                                              transforms.ToTensor()]) 
             mnist_train = MNIST('images/mnist', train=True, download=True,
                             transform=transforms_)
             _, mnist_val = torch.utils.data.random_split(mnist_train, [55000, 5000])
